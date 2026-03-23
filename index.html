@@ -373,7 +373,7 @@
             <p class="text-2xl text-slate-500 font-light max-w-3xl mb-12">
                 Explora el flujo de programación y el panel de control del prototipo desarrollado mediante <span class="font-bold text-slate-900">Node-RED</span>.
             </p>
-            <a href="https://gemini.google.com/share/d9fb35caf6e2" target="_blank" class="node-red-btn no-underline inline-flex items-center gap-4 group">
+            <a href="nodered.html" class="node-red-btn no-underline inline-flex items-center gap-4 group">
                 <i class="fa-solid fa-external-link group-hover:rotate-12 transition-transform"></i> Ver Presentación Node-RED
             </a>
             <p class="mt-20 text-[10px] font-black uppercase tracking-[0.6em] text-slate-300">Monitoreo de Consumo Eléctrico • Prototipo 2026</p>
@@ -407,8 +407,8 @@
             const qrImage = document.getElementById('qr-image');
             const currentURL = window.location.href;
             
-            // Si la URL es "about:blank" o similar, el QR no podrá redireccionar.
-            // Una vez subido a GitHub Pages, window.location.href será "https://tuusuario.github.io/tu-repo/"
+            // Si la URL es local, el QR mostrará un aviso o la ruta local.
+            // En GitHub Pages funcionará automáticamente.
             const apiURL = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(currentURL)}&color=EE1D23`;
             qrImage.src = apiURL;
         }
