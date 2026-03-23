@@ -1,650 +1,455 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Network, 
-  Cpu, 
-  Wifi, 
-  MessageSquare, 
-  Settings, 
-  Database, 
-  Play, 
-  AlertTriangle,
-  BookOpen,
-  Layout,
-  Activity,
-  ArrowRight,
-  Radio,
-  Lightbulb,
-  Droplets,
-  Factory,
-  Clock,
-  Cloud,
-  MessageCircle,
-  BarChart2,
-  Sliders,
-  Gauge
-} from 'lucide-react';
-
-// --- COMPONENTES UI PRINCIPALES ---
-
-const TabButton = ({ active, icon: Icon, label, onClick }) => (
-  <button
-    onClick={onClick}
-    className={`flex items-center w-full px-4 py-3 mb-2 rounded-lg transition-colors duration-200 ${
-      active 
-        ? 'bg-red-600 text-white shadow-md' 
-        : 'text-gray-600 hover:bg-red-50 hover:text-red-600'
-    }`}
-  >
-    <Icon className="w-5 h-5 mr-3" />
-    <span className="font-medium">{label}</span>
-  </button>
-);
-
-const Card = ({ title, description, icon: Icon, colorClass }) => (
-  <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-    <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-4 ${colorClass}`}>
-      <Icon className="w-6 h-6 text-white" />
-    </div>
-    <h3 className="text-xl font-bold text-gray-800 mb-2">{title}</h3>
-    <p className="text-gray-600 leading-relaxed">{description}</p>
-  </div>
-);
-
-// --- SECCIONES DE CONTENIDO ---
-
-const IntroSection = () => (
-  <div className="space-y-6 animate-fadeIn">
-    <div className="bg-gradient-to-r from-red-600 to-red-800 rounded-2xl p-8 text-white shadow-lg">
-      <h1 className="text-3xl md:text-4xl font-bold mb-4">Node-RED en el Internet de las Cosas (IoT)</h1>
-      <p className="text-lg md:text-xl opacity-90 max-w-3xl">
-        Una herramienta de programación visual para conectar dispositivos hardware, APIs y servicios en línea de formas nuevas e interesantes.
-      </p>
-    </div>
-
-    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
-      <Card 
-        title="Basado en Flujos" 
-        description="Programa arrastrando y soltando nodos. Crea lógica de forma visual sin escribir cientos de líneas de código."
-        icon={Network}
-        colorClass="bg-blue-500"
-      />
-      <Card 
-        title="Construido en Node.js" 
-        description="Ligero, rápido y altamente escalable. Ideal para ejecutarse en la nube o en el borde (Edge Computing) como una Raspberry Pi."
-        icon={Cpu}
-        colorClass="bg-green-500"
-      />
-      <Card 
-        title="Ecosistema IoT" 
-        description="Más de 2000 nodos creados por la comunidad para conectar casi cualquier protocolo (MQTT, HTTP, Modbus) y plataforma."
-        icon={Wifi}
-        colorClass="bg-purple-500"
-      />
-    </div>
-  </div>
-);
-
-const ConceptosSection = () => (
-  <div className="space-y-6 animate-fadeIn">
-    <h2 className="text-3xl font-bold text-gray-800 border-b pb-4">Conceptos Clave</h2>
-    
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-col md:flex-row items-center bg-white p-6 rounded-xl shadow-sm border-l-4 border-red-500">
-        <div className="flex-shrink-0 mr-6 mb-4 md:mb-0">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center border-2 border-red-500">
-            <Layout className="w-8 h-8 text-red-600" />
-          </div>
-        </div>
-        <div>
-          <h3 className="text-2xl font-bold text-gray-800 mb-2">Los Nodos (Nodes)</h3>
-          <p className="text-gray-600">
-            Son los bloques de construcción básicos. Tienen un propósito específico (leer datos, procesarlos o enviarlos). 
-            Se dividen en: <strong>Entrada</strong> (Input), <strong>Procesamiento</strong> (Function/Logic), y <strong>Salida</strong> (Output).
-          </p>
-        </div>
-      </div>
-
-      <div className="flex flex-col md:flex-row items-center bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500">
-        <div className="flex-shrink-0 mr-6 mb-4 md:mb-0">
-          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center border-2 border-blue-500">
-            <MessageSquare className="w-8 h-8 text-blue-600" />
-          </div>
-        </div>
-        <div>
-          <h3 className="text-2xl font-bold text-gray-800 mb-2">El Mensaje (msg)</h3>
-          <p className="text-gray-600">
-            Los datos fluyen entre los nodos como objetos JSON llamados <code>msg</code>. La información principal o útil suele viajar dentro de una propiedad fundamental llamada <code>msg.payload</code>.
-          </p>
-        </div>
-      </div>
-
-      <div className="flex flex-col md:flex-row items-center bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500">
-        <div className="flex-shrink-0 mr-6 mb-4 md:mb-0">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center border-2 border-green-500">
-            <Network className="w-8 h-8 text-green-600" />
-          </div>
-        </div>
-        <div>
-          <h3 className="text-2xl font-bold text-gray-800 mb-2">Los Flujos (Flows)</h3>
-          <p className="text-gray-600">
-            Es la red de nodos conectados mediante "cables" virtuales. Representan la lógica completa de la aplicación, desde que se lee un sensor hasta que se guarda en base de datos.
-          </p>
-        </div>
-      </div>
-
-      {/* NUEVA SECCIÓN: Publicador y Suscriptor */}
-      <div className="flex flex-col md:flex-row items-center bg-white p-6 rounded-xl shadow-sm border-l-4 border-purple-500">
-        <div className="flex-shrink-0 mr-6 mb-4 md:mb-0">
-          <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center border-2 border-purple-500">
-            <Radio className="w-8 h-8 text-purple-600" />
-          </div>
-        </div>
-        <div>
-          <h3 className="text-2xl font-bold text-gray-800 mb-2">Publicador y Suscriptor (Pub/Sub)</h3>
-          <p className="text-gray-600 mb-2">
-            Es el modelo de comunicación estrella en el IoT (utilizado por el protocolo MQTT). Los dispositivos no se comunican directamente, sino a través de un intermediario (Broker) utilizando "Temas" (Topics).
-          </p>
-          <ul className="list-disc list-inside text-gray-600 ml-2 space-y-1">
-            <li>
-              <strong>Publicador:</strong> Quien envía el dato a un tema (ej. un sensor publicando en <code>casa/temp</code>). En Node-RED, esto se logra usando un nodo de salida como <code>mqtt out</code>.
-            </li>
-            <li>
-              <strong>Suscriptor:</strong> Quien "escucha" ese tema para recibir actualizaciones automáticas. En nuestro simulador, el nodo inicial <code>mqtt in</code> actúa como suscriptor, introduciendo el dato al flujo de Node-RED.
-            </li>
-          </ul>
-        </div>
-      </div>
-
-    </div>
-  </div>
-);
-
-// --- NUEVA SECCIÓN: EJEMPLOS PRÁCTICOS ---
-const VisualNode = ({ label, icon: Icon, color, border, dotPos }) => (
-  <div className={`flex items-center relative rounded shadow-md w-36 md:w-48 h-12 ${color} border ${border} flex-shrink-0`}>
-    {dotPos.includes('left') && <div className="absolute left-[-4px] top-1/2 transform -translate-y-1/2 w-2 h-2 bg-gray-400 rounded-full border border-gray-600"></div>}
-    <div className="w-8 h-full bg-[rgba(0,0,0,0.1)] flex items-center justify-center border-r border-black/10">
-      <Icon className="w-4 h-4 text-gray-800" />
-    </div>
-    <span className="text-xs font-semibold px-2 text-gray-800 truncate" title={label}>{label}</span>
-    {dotPos.includes('right') && <div className="absolute right-[-4px] top-1/2 transform -translate-y-1/2 w-2 h-2 bg-gray-400 rounded-full border border-gray-600"></div>}
-  </div>
-);
-
-const EjemplosSection = () => (
-  <div className="space-y-8 animate-fadeIn">
-    <div className="border-b pb-4">
-      <h2 className="text-3xl font-bold text-gray-800">Ejemplos Prácticos en IoT</h2>
-      <p className="text-gray-600 mt-2">Casos de uso reales y cómo se ven modelados en flujos de Node-RED.</p>
-    </div>
-
-    {/* Ejemplo 1: Domótica */}
-    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-      <div className="flex items-center mb-4">
-        <Lightbulb className="w-6 h-6 text-yellow-500 mr-3" />
-        <h3 className="text-xl font-bold text-gray-800">1. Domótica: Iluminación Inteligente</h3>
-      </div>
-      <p className="text-gray-600 mb-6 text-sm">
-        Un sensor de movimiento publica un mensaje por MQTT. El flujo verifica si la hora actual es de noche antes de enviar el comando para encender la luz de la habitación.
-      </p>
-      <div className="flex flex-col md:flex-row items-center gap-2 overflow-x-auto pb-4">
-        <VisualNode label="Sensor Movimiento" icon={Radio} color="bg-[#d8bfd8]" border="border-[#b39bb3]" dotPos="right" />
-        <div className="w-1 h-8 md:w-8 md:h-1 bg-gray-300"></div>
-        <VisualNode label="¿Es de noche?" icon={Clock} color="bg-[#e2d96e]" border="border-[#b3a32f]" dotPos="left right" />
-        <div className="w-1 h-8 md:w-8 md:h-1 bg-gray-300"></div>
-        <VisualNode label="Encender Luz" icon={Lightbulb} color="bg-[#87a980]" border="border-[#5d7a57]" dotPos="left" />
-      </div>
-    </div>
-
-    {/* Ejemplo 2: Industria 4.0 */}
-    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-      <div className="flex items-center mb-4">
-        <Factory className="w-6 h-6 text-gray-600 mr-3" />
-        <h3 className="text-xl font-bold text-gray-800">2. Industria 4.0: Mantenimiento Predictivo</h3>
-      </div>
-      <p className="text-gray-600 mb-6 text-sm">
-        Se leen las vibraciones de un motor desde un PLC industrial (vía OPC-UA). Si supera un umbral de peligro, se registra en base de datos para historial y se envía una alerta a Telegram.
-      </p>
-      <div className="flex flex-col md:flex-row items-center gap-2 overflow-x-auto pb-4">
-        <VisualNode label="Leer PLC Motor" icon={Cpu} color="bg-[#a6bbcf]" border="border-[#728ba6]" dotPos="right" />
-        <div className="w-1 h-8 md:w-8 md:h-1 bg-gray-300"></div>
-        <VisualNode label="Si Vibración > Alta" icon={Settings} color="bg-[#e2d96e]" border="border-[#b3a32f]" dotPos="left right" />
-        <div className="w-1 h-8 md:w-8 md:h-1 bg-gray-300"></div>
-        <div className="flex flex-row md:flex-col gap-2 relative">
-           {/* Bifurcación visual (fork) para pantallas grandes */}
-           <div className="hidden md:block absolute left-[-8px] top-[24px] w-2 h-[60px] border-l-2 border-t-2 border-b-2 border-gray-300"></div>
-           <VisualNode label="Guardar InfluxDB" icon={Database} color="bg-[#e9967a]" border="border-[#b87058]" dotPos="left" />
-           <VisualNode label="Alerta Telegram" icon={MessageCircle} color="bg-[#a6bbcf]" border="border-[#728ba6]" dotPos="left" />
-        </div>
-      </div>
-    </div>
-
-    {/* Ejemplo 3: Agricultura */}
-    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-      <div className="flex items-center mb-4">
-        <Droplets className="w-6 h-6 text-blue-500 mr-3" />
-        <h3 className="text-xl font-bold text-gray-800">3. Agricultura: Riego Automatizado</h3>
-      </div>
-      <p className="text-gray-600 mb-6 text-sm">
-        Un sensor mide la humedad de la tierra. El flujo hace una petición HTTP a una API meteorológica externa. Si el suelo está seco Y no hay pronóstico de lluvia, activa la bomba de agua.
-      </p>
-      <div className="flex flex-col md:flex-row items-center gap-2 overflow-x-auto pb-4">
-        <VisualNode label="Humedad Suelo" icon={Radio} color="bg-[#d8bfd8]" border="border-[#b39bb3]" dotPos="right" />
-        <div className="w-1 h-8 md:w-8 md:h-1 bg-gray-300"></div>
-        <VisualNode label="API Clima" icon={Cloud} color="bg-[#fdd0a2]" border="border-[#cc9966]" dotPos="left right" />
-        <div className="w-1 h-8 md:w-8 md:h-1 bg-gray-300"></div>
-        <VisualNode label="Activar Bomba" icon={Droplets} color="bg-[#87a980]" border="border-[#5d7a57]" dotPos="left" />
-      </div>
-    </div>
-  </div>
-);
-
-// --- NUEVA SECCIÓN: DASHBOARD UI ---
-const DashboardSection = () => {
-  const [temp, setTemp] = useState(24);
-  const [hum, setHum] = useState(45);
-  const [motorStatus, setMotorStatus] = useState(true);
-  const [history, setHistory] = useState([20, 22, 21, 24, 23, 25, 24]);
-
-  // Simular datos en tiempo real
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const newTemp = temp + (Math.random() > 0.5 ? 1 : -1);
-      const newHum = hum + (Math.random() > 0.5 ? 2 : -2);
-      
-      setTemp(Math.min(Math.max(newTemp, 15), 35));
-      setHum(Math.min(Math.max(newHum, 30), 80));
-      
-      setHistory(prev => {
-        const newHist = [...prev.slice(1), newTemp];
-        return newHist;
-      });
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [temp, hum]);
-
-  return (
-    <div className="space-y-8 animate-fadeIn">
-      <div className="border-b pb-4">
-        <h2 className="text-3xl font-bold text-gray-800">Node-RED Dashboard</h2>
-        <p className="text-gray-600 mt-2">
-          El paquete <code>node-red-dashboard</code> permite crear interfaces web interactivas directamente desde los flujos, conectando nodos UI a los datos de IoT.
-        </p>
-      </div>
-
-      {/* Simulación del Dashboard */}
-      <div className="bg-[#1e1e1e] p-6 rounded-xl shadow-2xl border border-gray-800 text-white font-sans">
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ponencia CINEII LATAM 2026 - José Antonio Cobos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&display=swap');
         
-        <header className="flex items-center justify-between mb-8 border-b border-gray-700 pb-4">
-          <div className="flex items-center">
-            <Activity className="w-6 h-6 text-blue-400 mr-2" />
-            <h3 className="text-xl font-semibold">Monitor IoT Planta</h3>
-          </div>
-          <div className="text-xs text-gray-400">Actualización en vivo</div>
-        </header>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          
-          {/* Widget: Gauge (Indicador) */}
-          <div className="bg-gray-800 rounded-lg p-5 flex flex-col items-center justify-center relative overflow-hidden">
-            <h4 className="text-gray-400 text-sm font-medium mb-4 w-full text-center">Temperatura Actual</h4>
-            <div className="relative w-32 h-16 flex justify-center overflow-hidden">
-               {/* Arco del Gauge simulado */}
-               <svg viewBox="0 0 100 50" className="w-full h-full">
-                  <path d="M 10 50 A 40 40 0 0 1 90 50" fill="transparent" stroke="#374151" strokeWidth="15" strokeLinecap="round" />
-                  <path d="M 10 50 A 40 40 0 0 1 90 50" fill="transparent" stroke={temp > 30 ? "#ef4444" : temp < 20 ? "#3b82f6" : "#22c55e"} strokeWidth="15" strokeDasharray="125" strokeDashoffset={125 - (125 * (temp - 15) / 20)} strokeLinecap="round" className="transition-all duration-1000 ease-out" />
-               </svg>
-               <div className="absolute bottom-0 text-3xl font-bold text-white">{temp}°C</div>
-            </div>
-          </div>
-
-          {/* Widget: Numeric / Slider */}
-          <div className="bg-gray-800 rounded-lg p-5 flex flex-col justify-between">
-            <h4 className="text-gray-400 text-sm font-medium mb-2 flex items-center"><Droplets className="w-4 h-4 mr-1 text-blue-400"/> Humedad Suelo</h4>
-            <div className="flex items-end justify-between mb-2">
-              <span className="text-4xl font-light text-blue-400">{hum}<span className="text-xl">%</span></span>
-            </div>
-            <div className="w-full bg-gray-700 rounded-full h-2 mt-2">
-              <div className="bg-blue-500 h-2 rounded-full transition-all duration-1000" style={{ width: `${hum}%` }}></div>
-            </div>
-          </div>
-
-          {/* Widget: Switch Control */}
-          <div className="bg-gray-800 rounded-lg p-5 flex flex-col justify-between">
-             <h4 className="text-gray-400 text-sm font-medium mb-2 flex items-center"><Settings className="w-4 h-4 mr-1"/> Control de Motor</h4>
-             <div className="flex-1 flex items-center justify-center">
-                <button 
-                  onClick={() => setMotorStatus(!motorStatus)}
-                  className={`relative inline-flex items-center h-10 w-20 rounded-full transition-colors focus:outline-none ${motorStatus ? 'bg-green-500' : 'bg-gray-600'}`}
-                >
-                  <span className={`inline-block w-8 h-8 transform bg-white rounded-full transition-transform ${motorStatus ? 'translate-x-11' : 'translate-x-1'}`} />
-                </button>
-             </div>
-             <div className="text-center text-sm font-medium mt-2" style={{color: motorStatus ? '#22c55e' : '#9ca3af'}}>
-               Estado: {motorStatus ? 'ENCENDIDO' : 'APAGADO'}
-             </div>
-          </div>
-
-          {/* Widget: Chart (Gráfico) */}
-          <div className="bg-gray-800 rounded-lg p-5 col-span-1 md:col-span-2 lg:col-span-3">
-             <h4 className="text-gray-400 text-sm font-medium mb-4 flex items-center"><BarChart2 className="w-4 h-4 mr-1"/> Histórico de Temperatura (Últimos minutos)</h4>
-             <div className="h-32 flex items-end justify-between gap-1 mt-4">
-                {history.map((val, i) => {
-                  // Normalizar altura entre 15 y 35
-                  const height = Math.max(10, ((val - 15) / 20) * 100);
-                  return (
-                    <div key={i} className="w-full bg-blue-500/20 relative group rounded-t-sm">
-                      <div 
-                        className="absolute bottom-0 w-full bg-blue-500 rounded-t-sm transition-all duration-500"
-                        style={{ height: `${height}%` }}
-                      ></div>
-                      {/* Tooltip on hover */}
-                      <div className="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black text-xs p-1 rounded z-10">
-                        {val}°C
-                      </div>
-                    </div>
-                  )
-                })}
-             </div>
-          </div>
-
-        </div>
-      </div>
-    </div>
-  );
-};
-
-
-const SimulatorSection = () => {
-  const [simulationState, setSimulationState] = useState('idle'); // idle, node1, node2, node3
-  const [temperature, setTemperature] = useState(0);
-  const [messages, setMessages] = useState([]);
-
-  const addLog = (text, type = 'info') => {
-    setMessages(prev => [{ id: Date.now(), text, type }, ...prev].slice(0, 5));
-  };
-
-  const runSimulation = () => {
-    if (simulationState !== 'idle') return;
-    
-    // Generar temperatura aleatoria entre 15 y 45
-    const temp = Math.floor(Math.random() * 30) + 15;
-    setTemperature(temp);
-    setMessages([]); // Reset logs
-    
-    addLog(`Sensor publicó: ${temp}°C`, 'info');
-    setSimulationState('node1');
-
-    setTimeout(() => {
-      setSimulationState('node2');
-      if (temp > 30) {
-        addLog(`Condición cumplida: ${temp} > 30`, 'warning');
-      } else {
-        addLog(`Temperatura normal. Flujo termina.`, 'success');
-      }
-
-      setTimeout(() => {
-        if (temp > 30) {
-          setSimulationState('node3');
-          addLog(`¡Alerta publicada al Dashboard!`, 'error');
-        } else {
-          setSimulationState('idle'); // Si no pasa el filtro, vuelve a idle
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8FAFC;
+            margin: 0;
+            overflow: hidden;
+            color: #0F172A;
         }
+
+        .slide-deck {
+            width: 1280px;
+            height: 720px;
+            margin: auto;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: white;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+        }
+
+        .slide {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            padding: 100px 60px 60px 60px;
+            background: white;
+            pointer-events: none;
+        }
+
+        .slide.active {
+            opacity: 1;
+            pointer-events: auto;
+            z-index: 10;
+        }
+
+        .accent-red { color: #EE1D23; }
+        .bg-accent-red { background-color: #EE1D23; }
+
+        .bg-pattern {
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(circle at 2px 2px, rgba(0, 0, 0, 0.05) 1px, transparent 0);
+            background-size: 40px 40px;
+            z-index: -1;
+        }
+
+        .glow {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(238, 29, 35, 0.05) 0%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: -1;
+        }
+
+        .top-nav {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 80px;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .menu-item {
+            font-size: 11px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #64748B;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            padding: 10px 0;
+        }
+
+        .menu-item:hover { color: #EE1D23; }
+        .menu-item.active { color: #EE1D23; }
+        .menu-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: #EE1D23;
+            box-shadow: 0 2px 10px rgba(238, 29, 35, 0.3);
+        }
+
+        .nav-btn {
+            position: fixed;
+            bottom: 30px;
+            z-index: 100;
+            background: white;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            color: #0F172A;
+            padding: 15px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .nav-btn:hover { background: #EE1D23; border-color: #EE1D23; color: white; transform: scale(1.05); }
+        .btn-prev { right: 160px; }
+        .btn-next { right: 40px; }
+
+        .h-main { font-weight: 900; line-height: 1; letter-spacing: -0.05em; color: #0F172A; }
+        .subtitle { font-weight: 400; letter-spacing: 0.5em; text-transform: uppercase; color: #64748B; margin-bottom: 10px; }
         
-        setTimeout(() => {
-           setSimulationState('idle');
-        }, 2000);
+        .institution-badge {
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            padding: 24px;
+            border-radius: 24px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .institution-badge:hover { border-color: #EE1D23; transform: translateY(-5px); }
 
-      }, 1500);
-    }, 1500);
-  };
+        .node-red-btn {
+            background: linear-gradient(135deg, #EE1D23 0%, #C41217 100%);
+            padding: 25px 50px;
+            border-radius: 20px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: white;
+            box-shadow: 0 20px 40px rgba(238, 29, 35, 0.2);
+            transition: all 0.3s;
+        }
+        .node-red-btn:hover { transform: translateY(-5px); box-shadow: 0 25px 50px rgba(238, 29, 35, 0.4); }
 
-  return (
-    <div className="space-y-6 animate-fadeIn">
-      <div className="flex justify-between items-center border-b pb-4">
-        <h2 className="text-3xl font-bold text-gray-800">Simulador de Flujo IoT</h2>
-        <button 
-          onClick={runSimulation}
-          disabled={simulationState !== 'idle'}
-          className={`flex items-center px-6 py-2 rounded-lg font-bold text-white transition-all ${
-            simulationState === 'idle' 
-              ? 'bg-green-600 hover:bg-green-700 shadow-lg hover:shadow-xl transform hover:-translate-y-1' 
-              : 'bg-gray-400 cursor-not-allowed'
-          }`}
-        >
-          <Play className="w-5 h-5 mr-2 fill-current" />
-          {simulationState === 'idle' ? 'Generar Lectura (Publicar)' : 'Simulando...'}
-        </button>
-      </div>
+        .revo-card {
+            background: white;
+            border: 1px solid #E2E8F0;
+            padding: 40px;
+            border-radius: 40px;
+            transition: all 0.3s;
+        }
+        .revo-card:hover { border-color: #EE1D23; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05); }
 
-      <div className="bg-gray-100 rounded-xl p-8 relative overflow-hidden border-2 border-dashed border-gray-300 min-h-[400px]">
-        {/* SVG Wires */}
-        <svg className="absolute top-0 left-0 w-full h-full pointer-events-none z-0">
-          {/* Wire 1 to 2 */}
-          <path 
-            d="M 250 150 C 350 150, 350 150, 450 150" 
-            fill="transparent" 
-            stroke={simulationState === 'node1' || simulationState === 'node2' || simulationState === 'node3' ? '#ef4444' : '#9ca3af'} 
-            strokeWidth="4" 
-            className="transition-colors duration-500"
-          />
-          {/* Wire 2 to 3 */}
-          <path 
-            d="M 650 150 C 750 150, 750 150, 850 150" 
-            fill="transparent" 
-            stroke={simulationState === 'node3' ? '#ef4444' : '#9ca3af'} 
-            strokeWidth="4"
-            className="transition-colors duration-500"
-          />
-          {/* Animated Message Dots */}
-          {simulationState === 'node1' && (
-             <circle r="6" fill="#ef4444">
-               <animateMotion dur="1.5s" repeatCount="1" path="M 250 150 C 350 150, 350 150, 450 150" fill="freeze" />
-             </circle>
-          )}
-          {simulationState === 'node2' && temperature > 30 && (
-             <circle r="6" fill="#ef4444">
-               <animateMotion dur="1.5s" repeatCount="1" path="M 650 150 C 750 150, 750 150, 850 150" fill="freeze" />
-             </circle>
-          )}
-        </svg>
+        .qr-container {
+            position: absolute;
+            right: 40px;
+            bottom: 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            padding: 12px;
+            border-radius: 16px;
+            border: 1px solid #E2E8F0;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+            z-index: 50;
+        }
+        .qr-label {
+            font-size: 9px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #EE1D23;
+            max-width: 100px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
 
-        {/* Nodes Canvas */}
-        <div className="flex items-center justify-between relative z-10 max-w-4xl mx-auto h-[200px] mt-8">
-          
-          {/* Nodo 1: Input MQTT (Suscriptor) */}
-          <div className={`flex flex-col items-center transition-transform duration-300 ${simulationState === 'node1' ? 'scale-110' : ''}`}>
-            <div className="bg-[#d8bfd8] border border-[#b39bb3] rounded shadow-md w-48 h-12 flex items-center relative">
-              <div className="w-8 h-full bg-[rgba(0,0,0,0.1)] flex items-center justify-center border-r border-[#b39bb3]">
-                <Radio className="w-4 h-4 text-gray-700" />
-              </div>
-              <span className="text-sm font-semibold px-3 text-gray-800">mqtt in (suscriptor)</span>
-              {/* Output port */}
-              <div className="absolute right-[-4px] top-1/2 transform -translate-y-1/2 w-2 h-2 bg-gray-400 rounded-full border border-gray-600"></div>
+    <div class="slide-deck">
+        <div class="bg-pattern"></div>
+        <div class="glow" style="top: -100px; right: -100px;"></div>
+        <div class="glow" style="bottom: -100px; left: -100px;"></div>
+
+        <nav class="top-nav no-print">
+            <div class="flex items-center gap-4">
+                <div class="bg-accent-red text-white px-3 py-1 rounded font-black text-xs uppercase tracking-tighter">CINEII 2026</div>
+                <div class="h-4 w-px bg-slate-200"></div>
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">IIoT Energy Monitoring</span>
             </div>
-            {simulationState !== 'idle' && (
-              <div className="mt-4 bg-gray-800 text-green-400 text-xs p-2 rounded w-48 break-words font-mono shadow-lg">
-                msg.payload = {temperature}
-              </div>
-            )}
-          </div>
-
-          {/* Nodo 2: Switch / Lógica */}
-          <div className={`flex flex-col items-center transition-transform duration-300 ${simulationState === 'node2' ? 'scale-110' : ''}`}>
-             <div className="bg-[#e2d96e] border border-[#b3a32f] rounded shadow-md w-48 h-12 flex items-center relative">
-              {/* Input port */}
-              <div className="absolute left-[-4px] top-1/2 transform -translate-y-1/2 w-2 h-2 bg-gray-400 rounded-full border border-gray-600"></div>
-              
-              <div className="w-8 h-full bg-[rgba(0,0,0,0.1)] flex items-center justify-center border-r border-[#b3a32f]">
-                <Settings className="w-4 h-4 text-gray-700" />
-              </div>
-              <span className="text-sm font-semibold px-3 text-gray-800">switch: si &gt; 30</span>
-              
-              {/* Output port */}
-              <div className="absolute right-[-4px] top-1/2 transform -translate-y-1/2 w-2 h-2 bg-gray-400 rounded-full border border-gray-600"></div>
+            <div class="flex gap-8">
+                <div class="menu-item active" onclick="goToSlide(0)">Inicio</div>
+                <div class="menu-item" onclick="goToSlide(1)">Ponencia</div>
+                <div class="menu-item" onclick="goToSlide(2)">Evolución</div>
+                <div class="menu-item" onclick="goToSlide(5)">IIoT Core</div>
+                <div class="menu-item" onclick="goToSlide(6)">Node-RED</div>
+                <div class="menu-item" onclick="goToSlide(7)">Cierre</div>
             </div>
-             {simulationState === 'node2' && (
-               <div className="mt-4 font-mono text-xs font-bold text-gray-700 bg-white px-2 py-1 rounded shadow-sm">
-                 Evaluando: {temperature} &gt; 30 ?
-               </div>
-             )}
-          </div>
-
-          {/* Nodo 3: Output Dashboard/Alerta */}
-          <div className={`flex flex-col items-center transition-transform duration-300 ${simulationState === 'node3' ? 'scale-110' : ''}`}>
-             <div className="bg-[#87a980] border border-[#5d7a57] rounded shadow-md w-48 h-12 flex items-center relative opacity-50">
-              {/* Input port */}
-              <div className="absolute left-[-4px] top-1/2 transform -translate-y-1/2 w-2 h-2 bg-gray-400 rounded-full border border-gray-600"></div>
-              
-              <div className="w-8 h-full bg-[rgba(0,0,0,0.1)] flex items-center justify-center border-r border-[#5d7a57]">
-                <Activity className="w-4 h-4 text-gray-700" />
-              </div>
-              <span className="text-sm font-semibold px-3 text-gray-800">dashboard (pub)</span>
-            </div>
-            {/* Si está activo se ilumina */}
-            <div className={`absolute top-0 w-48 h-12 rounded shadow-lg bg-[#87a980] flex items-center border border-[#5d7a57] transition-opacity duration-300 ${simulationState === 'node3' ? 'opacity-100 ring-4 ring-red-400' : 'opacity-0'}`}>
-              <div className="absolute left-[-4px] top-1/2 transform -translate-y-1/2 w-2 h-2 bg-gray-400 rounded-full border border-gray-600"></div>
-              <div className="w-8 h-full bg-[rgba(0,0,0,0.1)] flex items-center justify-center border-r border-[#5d7a57]">
-                <AlertTriangle className="w-4 h-4 text-red-600 animate-pulse" />
-              </div>
-              <span className="text-sm font-semibold px-3 text-gray-900">¡ALERTA CRÍTICA!</span>
-            </div>
-          </div>
-
-        </div>
-
-        {/* Panel de Debug Simulado */}
-        <div className="absolute bottom-4 right-4 w-72 bg-white rounded-lg shadow-xl border border-gray-200 flex flex-col overflow-hidden">
-          <div className="bg-gray-800 text-white text-xs font-bold px-3 py-2 flex justify-between items-center">
-            <span>Panel de Debug (Logs)</span>
-            <div className="flex gap-1">
-              <div className="w-2 h-2 rounded-full bg-red-500"></div>
-              <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
-              <div className="w-2 h-2 rounded-full bg-green-500"></div>
-            </div>
-          </div>
-          <div className="p-2 min-h-[120px] max-h-[120px] overflow-y-auto text-xs font-mono space-y-1">
-            {messages.length === 0 ? (
-              <p className="text-gray-400 italic">Esperando mensajes...</p>
-            ) : (
-              messages.map((msg) => (
-                <div key={msg.id} className={`p-1 rounded ${
-                  msg.type === 'error' ? 'text-red-600 bg-red-50' : 
-                  msg.type === 'warning' ? 'text-yellow-600 bg-yellow-50' : 
-                  msg.type === 'success' ? 'text-green-600 bg-green-50' : 'text-blue-600 bg-blue-50'
-                }`}>
-                  <span className="opacity-50 text-[10px] mr-1">{new Date().toLocaleTimeString().split(' ')[0]}</span>
-                  {msg.text}
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-
-      </div>
-    </div>
-  );
-};
-
-
-// --- APLICACIÓN PRINCIPAL ---
-
-export default function App() {
-  const [currentTab, setCurrentTab] = useState('intro');
-
-  return (
-    <div className="min-h-screen bg-[#f3f4f6] font-sans flex text-gray-900">
-      
-      {/* Sidebar Navigation */}
-      <aside className="w-64 bg-white shadow-xl flex-shrink-0 hidden md:flex flex-col z-20">
-        <div className="p-6 bg-red-700 flex flex-col items-center justify-center text-white">
-          <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-inner mb-3">
-             <Network className="w-10 h-10 text-red-700" />
-          </div>
-          <h2 className="text-xl font-bold tracking-wider">Node-RED</h2>
-          <span className="text-xs bg-red-900 px-2 py-1 rounded-full mt-2 font-mono uppercase tracking-widest">Guía IoT</span>
-        </div>
-        
-        <nav className="flex-1 p-4 mt-4">
-          <TabButton 
-            active={currentTab === 'intro'} 
-            icon={BookOpen} 
-            label="1. Introducción" 
-            onClick={() => setCurrentTab('intro')} 
-          />
-          <TabButton 
-            active={currentTab === 'conceptos'} 
-            icon={Layout} 
-            label="2. Conceptos Clave" 
-            onClick={() => setCurrentTab('conceptos')} 
-          />
-          <TabButton 
-            active={currentTab === 'ejemplos'} 
-            icon={Lightbulb} 
-            label="3. Ejemplos Prácticos" 
-            onClick={() => setCurrentTab('ejemplos')} 
-          />
-          <TabButton 
-            active={currentTab === 'simulador'} 
-            icon={Play} 
-            label="4. Simulador Visual" 
-            onClick={() => setCurrentTab('simulador')} 
-          />
-          <TabButton 
-            active={currentTab === 'dashboard'} 
-            icon={BarChart2} 
-            label="5. Dashboard UI" 
-            onClick={() => setCurrentTab('dashboard')} 
-          />
         </nav>
-        
-        <div className="p-4 text-xs text-center text-gray-400 border-t">
-          Ponencia: Node-RED en IoT
+
+        <!-- DIAPOSITIVA 1: PORTADA CONGRESO -->
+        <div class="slide active items-center justify-center text-center">
+            <div class="qr-container no-print">
+                <img id="qr-image" src="" alt="QR Code" class="w-20 h-20">
+                <span class="qr-label">Escanea para seguir la presentación</span>
+            </div>
+
+            <p class="subtitle animate-pulse">Bienvenidos al</p>
+            <h1 class="h-main text-7xl md:text-8xl mb-8">
+                𝗩 𝗖𝗼𝗻𝗴𝗿𝗲𝘀𝗼 𝗜𝗻𝘁𝗲𝗿𝗻𝗮𝗰𝗶𝗼𝗻𝗮𝗹 <br>
+                𝗱𝗲 𝗘𝘀𝘁𝘂𝗱𝗶𝗮𝗻𝘁𝗲𝘀 𝗱𝗲 <br>
+                <span class="accent-red italic">𝗜𝗻𝗴𝗲𝗻𝗶𝗲𝗿í𝗮 𝗜𝗻𝗱𝘂𝘀𝘁𝗿𝗶𝗮𝗹</span>
+            </h1>
+            <div class="mt-8 px-10 py-4 bg-accent-red text-white text-3xl font-black rounded-2xl shadow-xl tracking-widest">
+                𝗖𝗜𝗡𝗘𝗜𝗜 𝗟𝗔𝗧𝗔𝗠 2026
+            </div>
+            <p class="mt-12 text-slate-400 font-bold uppercase tracking-[0.4em] text-sm">Marzo 2026 • Foro Académico Internacional</p>
         </div>
-      </aside>
 
-      {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto">
-        {/* Mobile Header */}
-        <header className="md:hidden bg-red-700 text-white p-4 flex justify-between items-center shadow-md">
-          <div className="flex items-center">
-            <Network className="w-6 h-6 mr-2" />
-            <h1 className="font-bold">Node-RED Guía IoT</h1>
-          </div>
-          {/* Simple Mobile Navigation Select */}
-          <select 
-            className="bg-red-800 text-white text-sm border-none rounded p-1"
-            value={currentTab}
-            onChange={(e) => setCurrentTab(e.target.value)}
-          >
-            <option value="intro">1. Introducción</option>
-            <option value="conceptos">2. Conceptos Clave</option>
-            <option value="ejemplos">3. Ejemplos Prácticos</option>
-            <option value="simulador">4. Simulador</option>
-            <option value="dashboard">5. Dashboard UI</option>
-          </select>
-        </header>
-
-        <div className="p-6 md:p-10 max-w-5xl mx-auto">
-          {currentTab === 'intro' && <IntroSection />}
-          {currentTab === 'conceptos' && <ConceptosSection />}
-          {currentTab === 'ejemplos' && <EjemplosSection />}
-          {currentTab === 'simulador' && <SimulatorSection />}
-          {currentTab === 'dashboard' && <DashboardSection />}
+        <!-- DIAPOSITIVA 2: PONENCIA Y PONENTE -->
+        <div class="slide justify-center">
+            <div class="grid grid-cols-12 gap-12 items-center">
+                <div class="col-span-7 space-y-8">
+                    <div class="w-16 h-2 bg-accent-red rounded-full"></div>
+                    <h2 class="h-main text-6xl leading-tight">
+                        Prototipo <span class="accent-red italic underline decoration-red-500 decoration-4">IIoT</span>-monitoreo <br>
+                        y registro de datos en <br>
+                        <span class="">tiempo real</span>
+                    </h2>
+                    <p class="text-3xl text-slate-500 font-light">
+                        Para el consumo de energía eléctrica con <span class="font-bold text-slate-900">Node-RED</span>.
+                    </p>
+                    <div class="text-xl font-bold text-slate-400 uppercase tracking-widest flex items-center gap-4">
+                        <i class="fa-solid fa-calendar-day accent-red"></i> 27 de Marzo de 2026
+                    </div>
+                </div>
+                <div class="col-span-5">
+                    <div class="institution-badge space-y-8 bg-white">
+                        <div class="flex items-center gap-5">
+                            <div class="text-xs font-black uppercase tracking-widest text-slate-400 border-r border-slate-200 pr-4">México</div>
+                            <div>
+                                <h3 class="text-2xl font-black text-slate-900 leading-none uppercase">José Antonio <br> Cobos Torrecilla</h3>
+                                <p class="accent-red font-bold text-xs uppercase tracking-widest mt-2">Ponente</p>
+                            </div>
+                        </div>
+                        <hr class="border-slate-100">
+                        <div class="space-y-6">
+                            <div class="flex items-center gap-4 group">
+                                <div class="w-12 h-12 bg-slate-900 rounded-lg flex items-center justify-center font-black text-white text-xs shadow-md">TecNM</div>
+                                <p class="text-sm font-bold uppercase tracking-tighter text-slate-700">Tecnológico Nacional de México</p>
+                            </div>
+                            <div class="flex items-center gap-4 group">
+                                <div class="w-12 h-12 bg-accent-red/10 border border-accent-red/20 rounded-lg flex items-center justify-center text-accent-red shadow-sm">
+                                    <i class="fa-solid fa-school"></i>
+                                </div>
+                                <p class="text-sm font-bold uppercase tracking-tighter italic text-slate-700">ITS Cosamaloapan</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-      </main>
 
-      {/* Animaciones CSS personalizadas (usando clases de Tailwind pero con estilos inyectados) */}
-      <style dangerouslySetInnerHTML={{__html: `
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.4s ease-out forwards;
-        }
-      `}} />
+        <!-- DIAPOSITIVA 3: REVOLUCIONES (INTRO) -->
+        <div class="slide items-center justify-center text-center">
+            <div class="w-24 h-24 bg-slate-900 rounded-full mb-10 flex items-center justify-center text-4xl shadow-2xl border-4 border-white">
+                <i class="fa-solid fa-industry text-white"></i>
+            </div>
+            <h2 class="h-main text-8xl uppercase tracking-tighter">Evolución <br><span class="accent-red italic">Industrial</span></h2>
+            <div class="h-2 w-24 bg-accent-red my-10 rounded-full mx-auto"></div>
+            <p class="text-2xl font-light text-slate-500 max-w-2xl">Un recorrido histórico desde la fuerza del vapor hasta la inteligencia colectiva del IIoT.</p>
+        </div>
+
+        <!-- DIAPOSITIVA 4: REVOLUCIONES 1 Y 2 -->
+        <div class="slide justify-center">
+            <div class="grid grid-cols-2 gap-12 items-center">
+                <div class="revo-card space-y-6">
+                    <span class="accent-red font-black text-7xl opacity-10">01</span>
+                    <h3 class="text-4xl font-black uppercase tracking-tighter text-slate-900">Mecanización</h3>
+                    <p class="text-slate-600 leading-relaxed font-light text-lg">Siglo XVIII: Energía de vapor y agua. El nacimiento de la fábrica moderna y los telares mecánicos.</p>
+                    <ul class="space-y-2 text-sm font-bold text-slate-400 uppercase tracking-widest">
+                        <li><i class="fa-solid fa-check accent-red mr-2"></i> James Watt</li>
+                        <li><i class="fa-solid fa-check accent-red mr-2"></i> Carbón Mineral</li>
+                    </ul>
+                </div>
+                <div class="revo-card space-y-6">
+                    <span class="accent-red font-black text-7xl opacity-10">02</span>
+                    <h3 class="text-4xl font-black uppercase tracking-tighter text-slate-900">Electrificación</h3>
+                    <p class="text-slate-600 leading-relaxed font-light text-lg">Siglo XIX: Producción en masa. Líneas de montaje, Fordismo y la invención del motor eléctrico.</p>
+                    <ul class="space-y-2 text-sm font-bold text-slate-400 uppercase tracking-widest">
+                        <li><i class="fa-solid fa-bolt accent-red mr-2"></i> Henry Ford</li>
+                        <li><i class="fa-solid fa-bolt accent-red mr-2"></i> Acero y Química</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- DIAPOSITIVA 5: REVOLUCIONES 3 Y 4 -->
+        <div class="slide justify-center">
+            <div class="grid grid-cols-2 gap-12 items-center">
+                <div class="revo-card space-y-6">
+                    <span class="accent-red font-black text-7xl opacity-10">03</span>
+                    <h3 class="text-4xl font-black uppercase tracking-tighter text-slate-900">Automatización</h3>
+                    <p class="text-slate-600 leading-relaxed font-light text-lg">Siglo XX (1969): Electrónica y TI. El auge de los PLC y la primera robótica industrial programable.</p>
+                    <ul class="space-y-2 text-sm font-bold text-slate-400 uppercase tracking-widest">
+                        <li><i class="fa-solid fa-microchip accent-red mr-2"></i> Microprocesadores</li>
+                        <li><i class="fa-solid fa-microchip accent-red mr-2"></i> Digitalización</li>
+                    </ul>
+                </div>
+                <div class="space-y-6 p-12 bg-slate-900 rounded-[40px] text-white shadow-2xl relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-accent-red opacity-10 blur-3xl"></div>
+                    <span class="text-white font-black text-7xl opacity-20">04</span>
+                    <h3 class="text-4xl font-black uppercase tracking-tighter">Ciber-Sistemas</h3>
+                    <p class="text-slate-300 leading-relaxed font-light text-lg">Actualidad: IIoT, IA y Cloud. Fusión de mundos físicos y digitales para optimización autónoma.</p>
+                    <ul class="space-y-2 text-sm font-bold text-slate-400 uppercase tracking-widest">
+                        <li><i class="fa-solid fa-network-wired accent-red mr-2"></i> Interconectividad</li>
+                        <li><i class="fa-solid fa-network-wired accent-red mr-2"></i> Datos Inteligentes</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- DIAPOSITIVA 6: IIOT COMO PILAR -->
+        <div class="slide justify-center">
+            <h2 class="h-main text-6xl mb-12 uppercase text-slate-900">IIoT: El <span class="accent-red italic underline decoration-slate-100 underline-offset-8">Sistema Nervioso</span></h2>
+            <div class="grid grid-cols-4 gap-8">
+                <div class="institution-badge text-center bg-white">
+                    <i class="fa-solid fa-database text-4xl mb-4 accent-red"></i>
+                    <h4 class="font-black text-xs uppercase mb-2 text-slate-900">Big Data</h4>
+                    <p class="text-[10px] text-slate-500 font-medium">Análisis de telemetría masiva en tiempo real.</p>
+                </div>
+                <div class="institution-badge text-center bg-white">
+                    <i class="fa-solid fa-cloud text-4xl mb-4 accent-red"></i>
+                    <h4 class="font-black text-xs uppercase mb-2 text-slate-900">Cloud</h4>
+                    <p class="text-[10px] text-slate-500 font-medium">Infraestructura elástica para datos remotos.</p>
+                </div>
+                <div class="institution-badge text-center bg-white">
+                    <i class="fa-solid fa-robot text-4xl mb-4 accent-red"></i>
+                    <h4 class="font-black text-xs uppercase mb-2 text-slate-900">IA</h4>
+                    <p class="text-[10px] text-slate-500 font-medium">Algoritmos de mantenimiento predictivo.</p>
+                </div>
+                <div class="institution-badge text-center bg-white">
+                    <i class="fa-solid fa-shield-halved text-4xl mb-4 accent-red"></i>
+                    <h4 class="font-black text-xs uppercase mb-2 text-slate-900">Seguridad</h4>
+                    <p class="text-[10px] text-slate-500 font-medium">Protección de la infraestructura crítica.</p>
+                </div>
+            </div>
+            <div class="mt-16 p-10 bg-slate-50 border border-slate-100 rounded-3xl italic text-2xl text-slate-600 border-l-[10px] border-l-accent-red shadow-sm">
+                "El IIoT no solo captura datos; otorga una <span class="text-slate-900 font-bold">voz digital</span> a las máquinas para transformar el consumo eléctrico en inteligencia operativa."
+            </div>
+        </div>
+
+        <!-- DIAPOSITIVA 7: LINK A NODE-RED -->
+        <div class="slide items-center justify-center text-center">
+            <div class="mb-12 relative">
+                <div class="absolute inset-0 bg-accent-red blur-3xl opacity-10 animate-pulse"></div>
+                <i class="fa-solid fa-diagram-project text-9xl accent-red relative z-10"></i>
+            </div>
+            <h2 class="h-main text-6xl mb-6 tracking-tighter uppercase text-slate-900">Arquitectura Técnica</h2>
+            <p class="text-2xl text-slate-500 font-light max-w-3xl mb-12">
+                Explora el flujo de programación y el panel de control del prototipo desarrollado mediante <span class="font-bold text-slate-900">Node-RED</span>.
+            </p>
+            <a href="nodered.html" class="node-red-btn no-underline inline-flex items-center gap-4 group">
+                <i class="fa-solid fa-external-link group-hover:rotate-12 transition-transform"></i> Ver Presentación Node-RED
+            </a>
+            <p class="mt-20 text-[10px] font-black uppercase tracking-[0.6em] text-slate-300">Monitoreo de Consumo Eléctrico • Prototipo 2026</p>
+        </div>
+
+        <!-- DIAPOSITIVA 8: CIERRE -->
+        <div class="slide items-center justify-center text-center">
+            <h1 class="h-main text-9xl accent-red mb-4 uppercase italic tracking-tighter text-slate-900">Gracias</h1>
+            <p class="text-3xl font-light text-slate-400 tracking-[0.4em] uppercase mb-12">¿Preguntas o Comentarios?</p>
+            <div class="h-2 w-24 bg-slate-100 my-12 rounded-full mx-auto"></div>
+            <p class="text-2xl font-black text-slate-900 uppercase tracking-tighter">José Antonio Cobos Torrecilla - México</p>
+            <p class="text-slate-400 text-sm uppercase tracking-widest mt-3 font-bold">TecNM | ITS Cosamaloapan</p>
+            <div class="mt-16 flex gap-6 justify-center grayscale opacity-50">
+                <i class="fa-solid fa-microchip"></i>
+                <i class="fa-solid fa-wifi"></i>
+                <i class="fa-solid fa-bolt"></i>
+            </div>
+        </div>
+
     </div>
-  );
-}
+
+    <button class="nav-btn btn-prev no-print" onclick="changeSlide(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+    <button class="nav-btn btn-next no-print" onclick="changeSlide(1)"><i class="fa-solid fa-chevron-right"></i></button>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const menuItems = document.querySelectorAll('.menu-item');
+
+        function generateQR() {
+            const qrImage = document.getElementById('qr-image');
+            const currentURL = window.location.href;
+            
+            // Si la URL es local, el QR mostrará un aviso o la ruta local.
+            // En GitHub Pages funcionará automáticamente.
+            const apiURL = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(currentURL)}&color=EE1D23`;
+            qrImage.src = apiURL;
+        }
+
+        function updateMenu() {
+            menuItems.forEach((item, index) => {
+                item.classList.remove('active');
+                const slideMapping = [0, 1, 2, 5, 6, 7];
+                const currentSectionIndex = slideMapping.reduce((prev, curr, idx) => {
+                    return currentSlide >= curr ? idx : prev;
+                }, 0);
+
+                if (index === currentSectionIndex) {
+                    item.classList.add('active');
+                }
+            });
+        }
+
+        function changeSlide(direction) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + direction + slides.length) % slides.length;
+            slides[currentSlide].classList.add('active');
+            updateMenu();
+        }
+
+        function goToSlide(index) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = index;
+            slides[currentSlide].classList.add('active');
+            updateMenu();
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') changeSlide(1);
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+        });
+
+        window.onload = () => {
+            generateQR();
+            updateMenu();
+        };
+    </script>
+</body>
+</html>
